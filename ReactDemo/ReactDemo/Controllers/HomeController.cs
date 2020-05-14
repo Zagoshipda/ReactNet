@@ -58,7 +58,6 @@ namespace ReactDemo.Controllers
             return Content("Success...! ^_^");
         }
 
-
         public IActionResult Index()
         {
             return View();

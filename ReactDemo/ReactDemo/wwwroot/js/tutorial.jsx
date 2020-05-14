@@ -55,14 +55,51 @@ class Comment extends React.Component {
 }
 
 class CommentForm extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { author: '', text: '' };
+        this.handleAuthorChange = this.handleAuthorChange.bind(this);
+        this.handleTextChange = this.handleTextChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+    handleAuthorChange(e) {
+        this.setState({ author: e.target.value });
+    }
+    handleTextChange(e) {
+        this.setState({ text: e.target.value });
+    }
+    handleSubmit(e) {
+        e.preventDefault();
+        const author = this.state.author.trim();
+        const text = this.state.text.trim();
+        if (!text || !author) {
+            return;
+        }
+        // Callback function from CommentBox.
+        this.props.onCommentSubmit({ author: author, text: text });
+        // Clear state after submit is done.
+        this.setState({ author: '', text: '' });
+    }
     render() {
         return (
-            <div className="commentForm">
+            <form className="commentForm" onSubmit={this.handleSubmit} >
                 <div>Hello, world! I am a CommentForm.</div>
-                <input type="text" placeholder="Your name" />
-                <input type="text" placeholder="Say something..." />
+                <input
+                    // controlled component.
+                    type="text"
+                    placeholder="Your name"
+                    value={this.state.author}
+                    onChange={this.handleAuthorChange}
+                />
+                <input
+                    // controlled component.
+                    type="text"
+                    placeholder="Your information..."
+                    value={this.state.text}
+                    onChange={this.handleTextChange}
+                />
                 <input type="submit" value="POST" />
-            </div>
+            </form>
         );
     }
 }
@@ -71,6 +108,7 @@ class CommentBox extends React.Component {
     constructor(props) {
         super(props);
         this.state = { data: [] };
+        this.handleCommentSubmit = this.handleCommentSubmit.bind(this);
     }
     //UNSAFE_componentWillMount() {
     loadCommentsFromServer() {
@@ -91,16 +129,29 @@ class CommentBox extends React.Component {
         );
     }
 
+    // Callback function to CommentForm.
+    // Submit to the server and refresh(update) the list.
+    handleCommentSubmit(comment) {
+        const data = new FormData();
+        data.append('Author', comment.author);
+        data.append('Text', comment.text);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('post', this.props.submitUrl, true);
+        xhr.onload = () => this.loadCommentsFromServer();
+        xhr.send(data);
+    }
+
     render() {
         return (
             <>
-                <div className="commentBox6">
+                <div className="commentBox">
                     <CommentList data={this.state.data} />
-                    <CommentForm />
+                    <CommentForm onCommentSubmit={this.handleCommentSubmit} />
                 </div>
-                
+
                 <h1>------- Test ------</h1>
-                <div className="commentBox">Hello, world! I am a CommentBox.</div>
+                <div className="commentBox1">Hello, world! I am a CommentBox.</div>
                 <div className="commentBox2" > Bye, world! I am a CommentBox2.</div>
                 //<div className="commentBox3" >1. This is NOT a comment</div>
                 {/*comment*/}
@@ -111,7 +162,6 @@ class CommentBox extends React.Component {
                     // 4. This is NOT a comment
                 </div>
             </>
-
         );
     }
 }
@@ -124,4 +174,4 @@ const data = [
 ];
 //ReactDOM.render(<CommentBox data={data} />, document.getElementById('content'));
 
-ReactDOM.render(<CommentBox url="/comments" pollInterval={2000} />, document.getElementById('content'));
+ReactDOM.render(<CommentBox url="/comments" pollInterval={2000} submitUrl="/comments/new" />, document.getElementById('content'));
