@@ -7,21 +7,18 @@
             </Comment>
             )
         );
+        //<Comment author="Daniel Lo Nigro">
+        //    Hello ReactJS.NET World!
+        //</Comment>
+        //<Comment author="Pete Hunt">
+        //    This is one comment
+        //</Comment>
+        //<Comment author="Jordan Walke">
+        //    This is *another* comment
+        //</Comment>
         return (
             <div className="commentList">
                 {commentNodes}
-                {/*
-                    Hello, world! I am a CommentList...!
-                    <Comment author="Daniel Lo Nigro">
-                        Hello ReactJS.NET World!
-                    </Comment>
-                    <Comment author="Pete Hunt">
-                        This is one comment
-                    </Comment>
-                    <Comment author="Jordan Walke">
-                        This is *another* comment
-                    </Comment>
-                */}
             </div>
         );
     }
@@ -38,7 +35,7 @@ function createRemarkable() {
 
 class Comment extends React.Component {
     rawMarkup() {
-        const md = new Remarkable();
+        const md = new createRemarkable();
         const rawMarkup = md.render(this.props.children.toString());
         return { __html: rawMarkup };
     }
@@ -107,7 +104,7 @@ class CommentForm extends React.Component {
 class CommentBox extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { data: [] };
+        this.state = { data: this.props.initialData };
         this.handleCommentSubmit = this.handleCommentSubmit.bind(this);
     }
     //UNSAFE_componentWillMount() {
@@ -122,7 +119,8 @@ class CommentBox extends React.Component {
     }
 
     componentDidMount() {
-        this.loadCommentsFromServer();
+        // Initial call.
+        //this.loadCommentsFromServer();
         window.setInterval(
             () => this.loadCommentsFromServer(),
             this.props.pollInterval,
@@ -132,6 +130,11 @@ class CommentBox extends React.Component {
     // Callback function to CommentForm.
     // Submit to the server and refresh(update) the list.
     handleCommentSubmit(comment) {
+        const comments = this.state.data;
+        comment.id = comments.length + 1;
+        const newComments = comments.concat([comment]);
+        this.setState({ data: newComments });
+
         const data = new FormData();
         data.append('Author', comment.author);
         data.append('Text', comment.text);
@@ -174,4 +177,4 @@ const data = [
 ];
 //ReactDOM.render(<CommentBox data={data} />, document.getElementById('content'));
 
-ReactDOM.render(<CommentBox url="/comments" pollInterval={2000} submitUrl="/comments/new" />, document.getElementById('content'));
+//ReactDOM.render(<CommentBox url="/comments" pollInterval={2000} submitUrl="/comments/new" />, document.getElementById('content'));
